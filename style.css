@@ -423,3 +423,23 @@ button:focus-visible { outline: 2px solid #222; outline-offset: 3px; }
 .place-result small { display: block; margin-top: 4px; }
 .google-attribution { width: 120px; height: auto; margin: 12px 0; }
 #place-results pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; line-height: 1.5; padding: 10px; background: #f5f5f5; color: #444; }
+
+.tl { position: relative; }
+.tl::before { content: ''; position: absolute; left: 78px; top: 16px; bottom: 16px; width: 1px; background: #ddd; }
+.timeline-entry { position: relative; display: grid; grid-template-columns: 48px minmax(0,1fr); gap: 24px; align-items: start; }
+.timeline-time { position: relative; padding-top: 19px; font-family: ui-monospace, monospace; font-size: 12px; font-variant-numeric: tabular-nums; color: #666; }
+.timeline-time::after { content: ''; position: absolute; top: 22px; right: -16px; width: 7px; height: 7px; border-radius: 50%; background: #555; box-shadow: 0 0 0 3px #fff; }
+.timeline-content { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 60px; padding: 12px 0; border-bottom: 1px solid #e5e5e5; }
+.timeline-entry .item { flex: 1; min-width: 0; width: auto; border: 0; padding: 0; gap: 6px; }
+.timeline-entry .item .nm { display: block; margin: 0; white-space: normal; overflow: visible; line-height: 1.5; font-size: 14px; }
+.timeline-option { display: block; font-size: 10px; color: #888; margin-top: 3px; }
+.timeline-actions { display: flex; flex: none; gap: 2px; }
+.timeline-actions button { min-width: 32px; min-height: 40px; padding: 4px; font-size: 11px; color: #777; }
+.timeline-actions button:first-child { color: #333; }
+.timeline-entry.cur .timeline-time { color: #111; font-weight: 700; }
+.timeline-entry.cur .timeline-time::after { background: #111; }
+.timeline-entry.past .item, .timeline-entry.past .timeline-time { color: #888; }
+.tl .leg { position: relative; margin-left: 72px; padding: 10px 0; border: 0; gap: 8px; }
+.tl .leg .lt { font-size: 11px; font-weight: 400; }
+.tl .leg .go { height: auto; min-height: 32px; font-size: 11px; padding: 0 4px; }
+.travel-note { margin: 0 18px 12px; font-size: 10px; color: #888; }

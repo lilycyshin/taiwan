@@ -142,6 +142,25 @@ window.DEFAULT_ITEMS = [
   ...revisedCityDays.filter(it => it.day === '2026-10-11')
 ];
 
+// Planning estimates, not live Google transit results. Unknown meal/market
+// locations are deliberately left without an invented duration or bus number.
+window.TRAVEL_RECOMMENDATIONS = {
+  'tainan-plan-1': 'TRA 열차 · 약 40–60분',
+  'tainan-plan-2': '도보/택시 · 식당 선택 후 시간 확인',
+  'tainan-plan-3': '도보/택시 · 출발 식당에 따라 시간 확인',
+  'tainan-plan-4': '도보/택시 · 식당 선택 후 시간 확인',
+  'tainan-plan-5': '택시 · 약 15–25분',
+  'tainan-plan-6': '택시 · 약 15–25분',
+  'tainan-plan-7': '택시 · 약 20–30분',
+  'tainan-plan-8': '택시/버스 · 야시장 선택 후 노선·시간 확인',
+  'tainan-plan-9': '택시 → TRA 열차 · 열차 약 40–60분',
+  'city-1': '택시/MRT · 출발 위치에서 시간 확인',
+  'city-2': '택시 · 약 20–30분',
+  'city-3': 'MRT 오렌지선 · 약 10–20분',
+  'city-4': '도보 · 약 10–15분',
+  'city-5': '택시 · 약 10–15분'
+};
+
 window.PHRASES = [
   { cat: '기본', color: 'pink', items: [
     ['안녕하세요', '你好', 'nǐ hǎo', '니 하오'],

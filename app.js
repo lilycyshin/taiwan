@@ -146,7 +146,7 @@ const navUrl = (dest, origin) => {
   const u = new URL('https://www.google.com/maps/dir/');
   u.searchParams.set('api', '1');
   if (origin) u.searchParams.set('origin', origin);
-  u.searchParams.set('destination', dest);
+  if (dest) u.searchParams.set('destination', dest);
   u.searchParams.set('travelmode', 'transit');
   return u.toString();
 };
@@ -231,14 +231,23 @@ function renderPlan() {
     <div class="map-controls"><select id="map-place" aria-label="Google Maps에 표시할 장소">
       ${list.map(it => `<option value="${esc(it.id)}">${esc(it.time)} · ${esc(it.title)}</option>`).join('')}
     </select><button data-act="day-route">${ic('route', 16, 2.4)} 동선</button></div>
+    <p class="travel-note">이동시간은 예상 · 실제 노선은 길찾기에서 확인</p>
     <div class="tl">
       ${list.map((it, i) => `
         ${i > 0 || it.move ? legHtml(it, list[i - 1]) : ''}
-        <button class="item ${i === curIdx ? 'cur' : ''} ${isToday && i < curIdx ? 'past' : ''}" data-item="${it.id}">
-          <span class="ico k-${it.kind}">${ic(KIND_ICON[it.kind] || 'pin', 22, 2.2)}</span>
-          <span class="txt"><div class="tm">${esc(it.time)}${it.optional ? ' · 옵션' : ''}</div><div class="nm">${esc(it.title)}</div></span>
-          <span class="badges">${memoBadge(it.id)}</span>
-        </button>`).join('')}
+        <div class="timeline-entry ${i === curIdx ? 'cur' : ''} ${isToday && i < curIdx ? 'past' : ''}">
+          <time class="timeline-time" datetime="${esc(it.day)}T${esc(it.time)}">${esc(it.time)}</time>
+          <div class="timeline-content">
+            <button class="item" data-item="${esc(it.id)}">
+              <span class="txt"><span class="nm">${esc(it.title)}</span>${it.optional ? '<small class="timeline-option">옵션</small>' : ''}</span>
+              <span class="badges">${memoBadge(it.id)}</span>
+            </button>
+            <div class="timeline-actions">
+              <button data-place="${esc(gq(it))}" aria-label="${esc(it.title)} 지도">지도</button>
+              <button data-act="del-item" data-id="${esc(it.id)}" aria-label="${esc(it.title)} 삭제">삭제</button>
+            </div>
+          </div>
+        </div>`).join('')}
     </div>
     <button class="add" data-act="add-item" style="border-color:${COLOR[d.color]}55;color:${COLOR[d.color]}">${ic('plus', 18, 2.6)} 일정</button>
   `;
@@ -254,11 +263,13 @@ function memoBadge(id) {
 
 function legHtml(it, prev) {
   const m = it.move || {};
+  const recommendation = !it.userEdited && window.TRAVEL_RECOMMENDATIONS[it.id];
+  const mode = { walk: '도보', taxi: '택시', mrt: 'MRT', lrt: '경전철', shuttle: '셔틀버스', ferry: '페리', scooter: '스쿠터', plane: '비행기', train: 'TRA 열차', boat: '보트' }[m.mode];
+  const summary = recommendation || m.text || `${mode || '추천 이동수단'} · 길찾기에서 확인`;
   const origin = prev ? gq(prev) : '';
   return `<div class="leg">
-    <span class="mi">${ic(m.mode || 'walk', 15, 2.4)}</span>
-    <span class="lt">${esc(m.text || '')}</span>
-    <button class="go" data-nav="${esc(gq(it))}" data-origin="${esc(origin)}">${ic('nav', 13, 2.6)} 길찾기</button>
+    <span class="lt">${esc(summary)}</span>
+    <button class="go" data-nav="${esc(gq(it))}" data-origin="${esc(origin)}">길찾기</button>
   </div>`;
 }
 
@@ -344,7 +355,7 @@ async function openItem(id) {
     </div>` : ''}
     <div class="sec">메모 ${ic('heart', 16, 2.4).replace('<svg', '<svg style="color:var(--pink)"')}</div>
     <div class="composer">
-      <textarea id="memo-text" placeholder="여기서 뭐 했어? 🍜"></textarea>
+      <textarea id="memo-text" placeholder="여기서 뭐 했어?"></textarea>
       <div class="bar">
         <button class="ibtn" data-act="pick-memo" style="background:var(--pink-soft);color:var(--pink);box-shadow:none">${ic('cam', 20, 2.2)}</button>
         <div class="thumbs" id="pend"></div>
@@ -388,7 +399,7 @@ function openEdit(id, day) {
         <div><label>종류</label><select name="kind">${opt(KINDS, it.kind)}</select></div>
         <div><label>이동수단</label><select name="mode">${opt(MODES, it.move?.mode)}</select></div>
       </div>
-      <label>이동 방법</label><input name="mtext" value="${esc(it.move?.text)}" placeholder="예: MRT R11 → R10 · 2분">
+      <label>이동수단 · 소요시간</label><input name="mtext" value="${esc(!it.userEdited && window.TRAVEL_RECOMMENDATIONS[it.id] || it.move?.text)}" placeholder="예: 택시 → 버스 2번 · 약 30분">
       <label>지도 검색어 (영어/중국어)</label><input name="q" value="${esc(it.q)}" placeholder="예: Pier-2 Art Center">
       <label>현지 이름 · 택시카드</label><input name="zh" value="${esc(it.zh)}" placeholder="예: 駁二藝術特區">
       <label>장소 주소</label><input name="addr" value="${esc(it.addr)}">
@@ -761,7 +772,7 @@ function pressKey(k) {
 function openTaxi(it) {
   const t = $('#taxi');
   t.innerHTML = `<button class="ibtn x" data-act="close-taxi">${ic('x', 20, 2.4)}</button>
-    <div class="hi">司機您好 👋</div>
+    <div class="hi">司機您好</div>
     <div class="big">${esc(it.zh || it.title)}</div>
     ${it.addr ? `<div class="addr">${esc(it.addr)}</div>` : ''}
     <div class="ty">請帶我們到這裡，謝謝！</div>`;
@@ -841,7 +852,7 @@ document.addEventListener('click', async e => {
       b.disabled = true;
       await addMemo({ itemId: it.id, day: it.day, text, blobs: S.pending });
       S.pending = [];
-      toast('기록 완료 ♥');
+      toast('기록 완료');
       await openItem(it.id);
       renderPlan();
       return;
@@ -859,7 +870,7 @@ document.addEventListener('click', async e => {
         for (const f of files) blobs.push(await compress(f));
         await addMemo({ itemId: null, day: d.day, text: '', blobs });
         renderAlbum();
-        toast(`${blobs.length}장 저장 ♥`);
+        toast(`${blobs.length}장 저장`);
       });
     case 'close-viewer': return $('#viewer').classList.remove('on');
     case 'del-photo':
