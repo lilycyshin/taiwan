@@ -215,7 +215,7 @@ function renderPlan() {
         <span class="chip pink">${ic('heart', 14, 2.6)} ${dLabel()}</span>
         <span class="chip" id="clock">🇹🇼 ${now.hm}</span>
       </div>
-      <div class="arch"><img src="img/hero.jpg" alt=""></div>
+      <div class="arch"><img src="img/taiwan-illustration.webp" alt="가오슝의 풍경과 여행하는 커플 일러스트"></div>
       <h1 class="title"><span>챔</span><span>댕</span><span>슝</span><span>슝</span></h1>
       <div class="sub">KAOHSIUNG · 10.8 – 10.11</div>
       <div class="quick">
@@ -446,7 +446,12 @@ function pick(cb) {
   S.pickCb = cb;
   const p = $('#picker');
   p.value = '';
-  p.click();
+  try {
+    if (typeof p.showPicker === 'function') p.showPicker();
+    else p.click();
+  } catch {
+    p.click();
+  }
 }
 async function saveBlobs(blobs) {
   const ids = blobs.map(() => 'b-' + uid());
@@ -757,7 +762,13 @@ $('#scrim').addEventListener('click', closeSheet);
 $('#say').addEventListener('click', () => $('#say').classList.remove('on'));
 $('#picker').addEventListener('change', e => {
   const files = [...e.target.files];
-  if (files.length && S.pickCb) S.pickCb(files);
+  const cb = S.pickCb;
+  S.pickCb = null;
+  if (!files.length || !cb) return;
+  Promise.resolve(cb(files)).catch(err => {
+    console.error('사진 첨부 실패', err);
+    toast('사진을 첨부하지 못했어요. 다시 시도해주세요');
+  });
 });
 $('#importer').addEventListener('change', e => { const f = e.target.files[0]; if (f) importAll(f); });
 

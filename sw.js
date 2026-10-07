@@ -1,7 +1,7 @@
-const CACHE = 'chamdaeng-v1';
+const CACHE = 'chamdaeng-v2';
 const ASSETS = [
   './', './index.html', './style.css', './app.js', './data.js',
-  './manifest.webmanifest', './img/hero.jpg',
+  './manifest.webmanifest', './img/taiwan-illustration.webp',
   './icons/icon-192.png', './icons/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Jua&display=swap',
   'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css',

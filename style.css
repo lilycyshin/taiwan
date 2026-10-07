@@ -1,24 +1,24 @@
 :root {
-  --bg: #FFF9F4;
+  --bg: #FFFEFC;
   --card: #FFFFFF;
-  --ink: #2E2433;
-  --ink-2: #7A6E80;
-  --ink-3: #B8AEBD;
-  --line: #F1E6EC;
-  --pink: #FF5C8A;
-  --pink-soft: #FFE3EC;
-  --coral: #FF8A5B;
-  --coral-soft: #FFE8DD;
-  --lemon: #FFC93C;
-  --lemon-soft: #FFF4CF;
-  --sky: #3BB8F0;
-  --sky-soft: #DDF3FD;
-  --mint: #2FCB8B;
-  --mint-soft: #DAF7EA;
-  --lilac: #A07CFF;
-  --lilac-soft: #EEE7FF;
-  --r: 22px;
-  --shadow: 0 6px 20px rgba(120, 60, 90, .08);
+  --ink: #293B39;
+  --ink-2: #687B76;
+  --ink-3: #A8B5B0;
+  --line: #EAEFEA;
+  --pink: #E86F61;
+  --pink-soft: #FCEAE5;
+  --coral: #E99060;
+  --coral-soft: #FBEDE2;
+  --lemon: #E9B94F;
+  --lemon-soft: #FBF2D7;
+  --sky: #62AFC4;
+  --sky-soft: #E5F3F5;
+  --mint: #5C9B7B;
+  --mint-soft: #E5F1E9;
+  --lilac: #8A82A8;
+  --lilac-soft: #EFEDF4;
+  --r: 20px;
+  --shadow: 0 8px 28px rgba(47, 76, 66, .08);
   --nav-h: 68px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
@@ -33,6 +33,7 @@ button { font: inherit; color: inherit; border: 0; background: none; padding: 0;
 input, textarea, select { font: inherit; color: inherit; }
 img { display: block; max-width: 100%; }
 svg { flex: none; }
+.file-picker { position: fixed; width: 1px; height: 1px; left: -10000px; top: 0; opacity: 0; pointer-events: none; }
 
 #app { max-width: 480px; margin: 0 auto; padding-bottom: calc(var(--nav-h) + var(--safe-b) + 24px); }
 .view { display: none; }
@@ -40,20 +41,21 @@ svg { flex: none; }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* ── hero ── */
-.hero { position: relative; padding: calc(var(--safe-t) + 14px) 18px 0; }
+.hero { position: relative; padding: calc(var(--safe-t) + 14px) 18px 0; overflow: hidden; }
 .hero-top { display: flex; justify-content: space-between; align-items: center; height: 36px; }
-.chip { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 99px; font-size: 13px; font-weight: 700; background: var(--card); box-shadow: var(--shadow); }
-.chip.pink { background: var(--pink); color: #fff; }
-.arch { position: relative; margin: 10px auto 0; width: 78%; aspect-ratio: 1 / 1.08; border-radius: 999px 999px 32px 32px; overflow: hidden; background: #EEF0F0; box-shadow: 0 14px 34px rgba(255, 92, 138, .18); border: 5px solid #fff; }
-.arch img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 99px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,.92); box-shadow: 0 5px 18px rgba(47,76,66,.06); }
+.chip.pink { background: var(--pink-soft); color: #B84F44; border-color: #F5D3CB; }
+.arch { position: relative; margin: 12px auto 0; width: 100%; aspect-ratio: 4 / 3; border-radius: 26px; overflow: hidden; background: #FBFAF5; box-shadow: 0 14px 38px rgba(49, 80, 71, .11); border: 1px solid #F0EEE5; }
+.arch::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 7px rgba(255,255,255,.5); border-radius: inherit; pointer-events: none; }
+.arch img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .confetti { position: absolute; inset: 0; pointer-events: none; }
-.confetti i { position: absolute; border-radius: 99px; }
-.title { text-align: center; margin: 14px 0 2px; font-family: var(--display); font-size: 40px; letter-spacing: -1px; line-height: 1; }
+.confetti i { display: none; }
+.title { text-align: center; margin: 16px 0 3px; font-family: var(--display); font-size: 38px; letter-spacing: -.5px; line-height: 1; }
 .title span:nth-child(1) { color: var(--pink); }
 .title span:nth-child(2) { color: var(--coral); }
 .title span:nth-child(3) { color: var(--sky); }
 .title span:nth-child(4) { color: var(--mint); }
-.sub { text-align: center; color: var(--ink-2); font-size: 13px; font-weight: 600; letter-spacing: .5px; }
+.sub { text-align: center; color: var(--ink-2); font-size: 12px; font-weight: 700; letter-spacing: 1.4px; }
 .quick { display: flex; gap: 10px; justify-content: center; margin: 16px 0 4px; }
 .qbtn { display: flex; align-items: center; gap: 7px; height: 44px; padding: 0 16px; border-radius: 99px; font-weight: 700; font-size: 14px; }
 .qbtn.pink { background: var(--pink-soft); color: var(--pink); }
@@ -61,7 +63,7 @@ svg { flex: none; }
 .qbtn.lemon { background: var(--lemon-soft); color: #b98600; }
 
 /* ── day tabs ── */
-.days { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; padding: calc(var(--safe-t) + 10px) 18px 10px; background: linear-gradient(var(--bg) 80%, rgba(255,249,244,0)); }
+.days { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; padding: calc(var(--safe-t) + 10px) 18px 10px; background: linear-gradient(var(--bg) 80%, rgba(255,254,252,0)); }
 .day { flex: 1; height: 58px; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; transition: transform .15s; }
 .day b { font-family: var(--display); font-size: 18px; font-weight: 400; }
 .day small { font-size: 11px; color: var(--ink-2); font-weight: 600; }
@@ -182,7 +184,7 @@ svg { flex: none; }
 .key.fn { color: var(--ink-2); font-size: 18px; }
 
 /* ── nav ── */
-.nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; padding: 8px 14px calc(8px + var(--safe-b)); background: rgba(255,249,244,.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; padding: 8px 14px calc(8px + var(--safe-b)); background: rgba(255,254,252,.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .nav .in { max-width: 452px; margin: 0 auto; display: flex; background: var(--card); border-radius: 26px; box-shadow: 0 8px 26px rgba(120,60,90,.14); padding: 6px; }
 .nav button { flex: 1; height: 52px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10.5px; font-weight: 800; color: var(--ink-3); transition: background .2s, color .2s; }
 .nav button.on[data-v="plan"] { background: var(--pink-soft); color: var(--pink); }
