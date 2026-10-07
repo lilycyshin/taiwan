@@ -50,7 +50,7 @@ const P = {
 const ic = (n, s = 22, w = 2) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${P[n] || P.pin}</svg>`;
 const KIND_ICON = { plane: 'plane', hotel: 'hotel', eat: 'eat', sight: 'sight', sea: 'sea', shop: 'shop', move: 'move' };
 const PIN_COLOR = { plane: '#A07CFF', hotel: '#FF5C8A', eat: '#FF8A5B', sight: '#F5B400', sea: '#3BB8F0', shop: '#2FCB8B', move: '#9A8FA0' };
-const COLOR = { pink: '#FF5C8A', sky: '#3BB8F0', lemon: '#FFC93C', mint: '#2FCB8B', coral: '#FF8A5B', lilac: '#A07CFF' };
+const COLOR = { pink: '#E46643', sky: '#E46643', lemon: '#E46643', mint: '#E46643', coral: '#E46643', lilac: '#E46643' };
 
 /* ───────── storage (IndexedDB) ───────── */
 const DB = {
@@ -215,9 +215,9 @@ function renderPlan() {
         <span class="chip pink">${ic('heart', 14, 2.6)} ${dLabel()}</span>
         <span class="chip" id="clock">🇹🇼 ${now.hm}</span>
       </div>
-      <div class="arch"><img src="img/taiwan-illustration.webp" alt="가오슝의 풍경과 여행하는 커플 일러스트"></div>
+      <div class="arch"><img src="img/taiwan-cat.webp" alt="대만 간식과 고양이"></div>
       <h1 class="title"><span>챔</span><span>댕</span><span>슝</span><span>슝</span></h1>
-      <div class="sub">KAOHSIUNG · 10.8 – 10.11</div>
+      <div class="sub">10.8 – 10.11 · 가오슝</div>
       <div class="quick">
         <button class="qbtn pink" data-act="home-nav">${ic('home', 18, 2.4)} 호텔로</button>
         <button class="qbtn lemon" data-act="home-taxi">${ic('car', 18, 2.4)} 택시카드</button>
@@ -506,6 +506,9 @@ async function renderAlbum() {
         <button class="ibtn" data-act="export" aria-label="백업">${ic('down', 20, 2.2)}</button>
         <button class="ibtn" data-act="import" aria-label="불러오기">${ic('up', 20, 2.2)}</button>
       </div></div>
+    <div class="cloud-panel">
+      ${window.TripCloud.email() ? `<span>클라우드 연결됨</span><button data-act="cloud-upload">백업</button><button data-act="cloud-download">복원</button><button data-act="cloud-logout">로그아웃</button>` : `<button data-act="cloud-login">이메일로 클라우드 연결</button>`}
+    </div>
     ${T.days.map(d => {
       const ms = S.memos.filter(m => m.day === d.date).sort((a, b) => a.at - b.at);
       const photos = ms.flatMap(m => (m.photos || []).map(p => [p, m.id]));
@@ -680,6 +683,45 @@ document.addEventListener('click', async e => {
   if (d.quick) { S.money.input = d.quick; renderMoney(); return; }
 
   switch (d.act) {
+    case 'cloud-login': {
+      const email = prompt('로그인 이메일');
+      if (!email?.trim()) return;
+      try {
+        await window.TripCloud.sendCode(email.trim());
+        const code = prompt('이메일로 받은 인증번호');
+        if (!code?.trim()) return;
+        await window.TripCloud.verify(email.trim(), code.trim());
+        await renderAlbum();
+        toast('클라우드 연결 완료');
+      } catch (err) { toast('연결 실패: ' + err.message); }
+      return;
+    }
+    case 'cloud-upload': {
+      b.disabled = true;
+      toast('백업 중…');
+      try {
+        const data = { app: 'chamdaeng', v: 1, at: Date.now(), items: S.items, memos: S.memos, blobs: {} };
+        for (const rec of await DB.all('blobs')) data.blobs[rec.id] = await readAsDataURL(rec.blob);
+        await window.TripCloud.upload(data);
+        toast('클라우드 백업 완료');
+      } catch (err) { toast('백업 실패: ' + err.message); }
+      finally { b.disabled = false; }
+      return;
+    }
+    case 'cloud-download': {
+      if (!confirm('클라우드 기록을 불러올까요? 같은 기록은 백업 내용으로 갱신됩니다.')) return;
+      b.disabled = true;
+      try {
+        const data = await window.TripCloud.download();
+        await importAll(new Blob([JSON.stringify(data)], { type: 'application/json' }));
+      } catch (err) { toast('복원 실패: ' + err.message); }
+      finally { b.disabled = false; }
+      return;
+    }
+    case 'cloud-logout':
+      try { await window.TripCloud.logout(); }
+      catch (err) { console.warn('원격 로그아웃 실패', err); }
+      return renderAlbum();
     case 'home-nav': return go(navUrl(currentHotel().q));
     case 'home-taxi': { const h = currentHotel(); return openTaxi({ zh: h.zh, addr: h.addr }); }
     case 'hide-install': localStorage.setItem('hideInstall', '1'); return renderPlan();

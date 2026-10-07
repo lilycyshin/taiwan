@@ -1,7 +1,7 @@
-const CACHE = 'chamdaeng-v3';
+const CACHE = 'chamdaeng-v4';
 const ASSETS = [
-  './', './index.html', './style.css', './app.js', './data.js',
-  './manifest.webmanifest', './img/taiwan-illustration.webp',
+  './', './index.html', './style.css', './app.js', './data.js', './cloud.js',
+  './manifest.webmanifest', './img/taiwan-cat.webp',
   './icons/icon-192.png', './icons/icon-512.png',
   'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
@@ -18,6 +18,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  if (url.hostname.endsWith('.supabase.co')) return;
   // 지도 타일은 캐시하지 않음 (용량)
   if (/basemaps\.cartocdn|tile\./.test(url.host)) return;
   // 환율 API는 항상 네트워크

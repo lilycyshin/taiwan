@@ -303,3 +303,29 @@ svg { flex: none; }
 .screen { background: #EAF8F5; border-radius: 16px; box-shadow: none; }
 .key { border: 1px solid var(--line); box-shadow: none; border-radius: 12px; }
 .sheet { border-radius: 20px 20px 0 0; }
+
+:root {
+  --pink: #E46643;
+  --coral: #E46643;
+  --sky: #E46643;
+  --mint: #E46643;
+  --lemon: #E46643;
+  --lilac: #E46643;
+  --pink-soft: #FCF0EB;
+  --coral-soft: #FCF0EB;
+  --sky-soft: #FCF0EB;
+  --mint-soft: #FCF0EB;
+  --lemon-soft: #FCF0EB;
+  --lilac-soft: #FCF0EB;
+}
+.chip.pink, .leg .go, .nav button.on[data-v], .qbtn.pink, .qbtn.lemon { color: var(--pink); background: var(--pink-soft); border-color: #F4DBD2; }
+.arch { aspect-ratio: 1.15; background: #fff; border: 0; }
+.arch img { object-fit: contain; object-position: center; }
+.title { font-size: 25px; }
+.install { display: none; }
+.screen { background: var(--pink-soft); }
+.mapcard { background: #F6F6F6; }
+.cloud-panel { margin: 0 18px 22px; padding: 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 12px; font-size: 12px; }
+.cloud-panel span { color: var(--ink-2); }
+.cloud-panel button { color: var(--pink); font-weight: 600; min-height: 32px; }
+.cloud-panel button:disabled { opacity: .5; }
