@@ -405,7 +405,7 @@ function openEdit(id, day) {
   const results = $('#place-results');
   searchInput.oninput = () => { $('#place-external').href = placeUrl(searchInput.value.trim() || 'Kaohsiung Taiwan'); };
   $('#place-key').onclick = () => {
-    const key = prompt('Google Maps 브라우저 API 키\nMaps JavaScript API · Places API (New) 활성화 필요', localStorage.getItem('trip-google-maps-key') || '');
+    const key = prompt('Google Maps 브라우저 API 키\nMaps JavaScript API · Places API (New) 활성화 필요', window.TripPlaces.getKey());
     if (key === null) return;
     if (key.trim()) localStorage.setItem('trip-google-maps-key', key.trim());
     else localStorage.removeItem('trip-google-maps-key');

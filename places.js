@@ -1,9 +1,12 @@
 /* Browser API keys must be restricted to this site's HTTP referrers. */
 window.TripPlaces = (() => {
+  // Public browser key supplied for this app; restrict HTTP referrers in Google Cloud.
+  const defaultKey = 'AIzaSyBOIUjH7M7axzisWoePAXckQ1EMwdEj27E';
+  const getKey = () => localStorage.getItem('trip-google-maps-key') || defaultKey;
   let loading = null;
   async function library() {
     if (loading) return loading;
-    let key = localStorage.getItem('trip-google-maps-key');
+    let key = getKey();
     if (!key) {
       key = prompt('Google 장소 검색 API 키\nMaps JavaScript API와 Places API (New)를 활성화한 브라우저용 키를 입력해주세요.');
       if (!key?.trim()) throw new Error('Google Maps API 키가 필요해요');
@@ -40,19 +43,30 @@ window.TripPlaces = (() => {
     return loading;
   }
   return {
+    getKey,
     async search(text, day) {
       const { Place } = await library();
       const center = day === '2026-10-10' ? { lat: 22.997, lng: 120.212 }
         : day === '2026-10-09' ? { lat: 22.35, lng: 120.38 }
         : { lat: 22.63, lng: 120.30 };
-      const { places } = await Place.searchByText({
+      let response;
+      try { response = await Place.searchByText({
         textQuery: text,
         fields: ['id', 'displayName', 'formattedAddress', 'location', 'googleMapsURI', 'attributions'],
         language: 'ko', region: 'TW',
         locationBias: { center, radius: 30000 },
         maxResultCount: 5
-      });
-      return places || [];
+      }); } catch (error) {
+        const code = String(error.code || error.message || error);
+        if (/REQUEST_DENIED|PERMISSION_DENIED|ApiNotActivated|ApiTargetBlocked|not.*authorized|not.*enabled/i.test(code)) {
+          throw new Error('Google 검색 권한이 없어요. 같은 프로젝트에서 Places API (New) 활성화와 API 키 제한을 확인해주세요. (' + code + ')');
+        }
+        if (/OVER_QUERY_LIMIT|RESOURCE_EXHAUSTED|Billing|quota/i.test(code)) {
+          throw new Error('Google Cloud 결제 연결 또는 검색 할당량을 확인해주세요. (' + code + ')');
+        }
+        throw error;
+      }
+      return response.places || [];
     },
     resetKey() {
       localStorage.removeItem('trip-google-maps-key');
