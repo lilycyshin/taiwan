@@ -124,9 +124,22 @@ const revisedCityDays = [
   { id: 'city-4', day: '2026-10-11', time: '14:00', kind: 'sight', title: '보얼예술특구', zh: '駁二藝術特區', q: 'Pier-2 Art Center', lat: 22.6199, lng: 120.2814, move: { mode: 'walk', text: '항구 산책' } },
   { id: 'city-5', day: '2026-10-11', time: '16:00', kind: 'shop', title: '기념품 · 시내 산책', zh: '漢神百貨', q: 'Hanshin Department Store Chenggong', lat: 22.6195, lng: 120.2972, tip: '체크아웃·공항 이동은 실제 항공편에 맞춰 일정을 추가해주세요.' }
 ];
+window.PREVIOUS_CITY_DEFAULT_ITEMS = revisedCityDays;
+const tainanDayTrip = [
+  { id: 'tainan-plan-1', day: '2026-10-10', time: '08:30', kind: 'move', title: '가오슝역 → 타이난역', zh: '臺南車站', q: 'Tainan Railway Station Taiwan', move: { mode: 'mrt', text: 'TRA 열차 · 가오슝역 출발' }, tip: '열차편과 소요 시간은 당일 시간표를 확인하세요.' },
+  { id: 'tainan-plan-2', day: '2026-10-10', time: '09:30', kind: 'eat', title: '브런치 · 딴삥, 만두, 콩물스프', q: 'Tainan breakfast dan bing dumplings soy milk', tip: '메뉴 기준 검색입니다. 식당을 정하면 Google 장소 검색으로 추가·수정해주세요.' },
+  { id: 'tainan-plan-3', day: '2026-10-10', time: '10:00', kind: 'shop', title: '하야시백화점 · 티타임', zh: '林百貨', q: 'Hayashi Department Store Tainan', move: { mode: 'walk', text: '하야시백화점으로 이동' }, tip: '백화점·카페 운영 시간은 방문 전에 확인하세요.' },
+  { id: 'tainan-plan-4', day: '2026-10-10', time: '12:00', kind: 'eat', title: '우육면 / 돼지등심튀김 후룩', q: 'Tainan beef noodle fried pork chop', tip: '우육면 또는 돼지등심튀김 중 선택. 식당은 아직 미정이에요.' },
+  { id: 'tainan-plan-5', day: '2026-10-10', time: '13:00', kind: 'sight', title: '안평노가 · 안평고성', zh: '安平老街 / 安平古堡', q: 'Anping Old Fort Tainan', optional: true, move: { mode: 'taxi', text: '안평으로 이동 · 옵션, 패스 가능' }, tip: '선택 일정입니다. 건너뛰면 휴식 후 쓰차오 녹색터널로 바로 이동하세요.' },
+  { id: 'tainan-plan-6', day: '2026-10-10', time: '15:00', kind: 'sight', title: '쓰차오 녹색터널 · 나룻배 슝슝', zh: '四草綠色隧道', q: 'Sicao Green Tunnel Tainan', move: { mode: 'taxi', text: '맹그로프숲으로 이동' }, tip: '보트 운영 시간·대기·날씨를 확인하세요.' },
+  { id: 'tainan-plan-7', day: '2026-10-10', time: '17:00', kind: 'eat', title: '선농지애 · 게찜 / 장어국수', zh: '神農街', q: 'Shennong Street Tainan', move: { mode: 'taxi', text: '선농거리로 이동' }, tip: '저녁은 ① 해산물 게찜 ② 장어국수 중 선택. 식당은 현장에서 정해주세요.' },
+  { id: 'tainan-plan-8', day: '2026-10-10', time: '19:00', kind: 'shop', title: '야시장 구경', q: 'Tainan night market', tip: '방문할 야시장의 당일 영업을 확인하세요.' },
+  { id: 'tainan-plan-9', day: '2026-10-10', time: '20:30', kind: 'move', title: '가오슝 복귀', zh: '臺南車站', q: 'Tainan Railway Station Taiwan', move: { mode: 'mrt', text: '타이난역 → 가오슝역 · TRA 열차' }, tip: '타이난역에서 출발합니다. 열차편을 확인하세요.' }
+];
 window.DEFAULT_ITEMS = [
   ...window.PREVIOUS_DEFAULT_ITEMS.filter(it => it.day < '2026-10-10'),
-  ...revisedCityDays
+  ...tainanDayTrip,
+  ...revisedCityDays.filter(it => it.day === '2026-10-11')
 ];
 
 window.PHRASES = [

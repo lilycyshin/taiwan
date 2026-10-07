@@ -236,7 +236,7 @@ function renderPlan() {
         ${i > 0 || it.move ? legHtml(it, list[i - 1]) : ''}
         <button class="item ${i === curIdx ? 'cur' : ''} ${isToday && i < curIdx ? 'past' : ''}" data-item="${it.id}">
           <span class="ico k-${it.kind}">${ic(KIND_ICON[it.kind] || 'pin', 22, 2.2)}</span>
-          <span class="txt"><div class="tm">${esc(it.time)}</div><div class="nm">${esc(it.title)}</div></span>
+          <span class="txt"><div class="tm">${esc(it.time)}${it.optional ? ' · 옵션' : ''}</div><div class="nm">${esc(it.title)}</div></span>
           <span class="badges">${memoBadge(it.id)}</span>
         </button>`).join('')}
     </div>
@@ -469,7 +469,22 @@ function openEdit(id, day) {
       logo.alt = 'Powered by Google';
       logo.className = 'google-attribution';
       results.append(logo);
-    } catch (error) { results.textContent = error.message; }
+    } catch (error) {
+      results.replaceChildren();
+      const message = document.createElement('p');
+      message.textContent = error.message;
+      results.append(message);
+      if (error.diagnostic) {
+        const details = document.createElement('details');
+        details.open = true;
+        const summary = document.createElement('summary');
+        summary.textContent = '검색 오류 상세';
+        const text = document.createElement('pre');
+        text.textContent = error.diagnostic;
+        details.append(summary, text);
+        results.append(details);
+      }
+    }
     finally { button.disabled = false; }
   };
   searchInput.onkeydown = e => {
@@ -908,18 +923,19 @@ async function loadState() {
   S.memos = await DB.all('memos');
 }
 async function migrateItinerary() {
-  if (localStorage.getItem('trip-itinerary-version') === '2') return;
+  if (localStorage.getItem('trip-itinerary-version') === '3') return;
   const affected = S.items.filter(it => it.day >= '2026-10-10');
   // Keep a recoverable copy before updating seeded defaults.
-  localStorage.setItem('trip-previous-itinerary', JSON.stringify(affected));
-  const previous = new Map(window.PREVIOUS_DEFAULT_ITEMS.map(it => [it.id, it]));
+  localStorage.setItem('trip-previous-itinerary-v3', JSON.stringify(affected));
+  const previous = new Map([...window.PREVIOUS_DEFAULT_ITEMS, ...window.PREVIOUS_CITY_DEFAULT_ITEMS].map(it => [it.id, it]));
   const obsolete = affected.filter(it => !it.userEdited
+    && !window.DEFAULT_ITEMS.some(next => next.id === it.id)
     && JSON.stringify(it) === JSON.stringify(previous.get(it.id))
     && !S.memos.some(m => m.itemId === it.id));
   const additions = window.DEFAULT_ITEMS.filter(it => it.day >= '2026-10-10' && !S.items.some(old => old.id === it.id));
   await DB.putMany('items', additions);
   for (const it of obsolete) await DB.del('items', it.id);
-  localStorage.setItem('trip-itinerary-version', '2');
+  localStorage.setItem('trip-itinerary-version', '3');
   await loadState();
 }
 async function boot() {
