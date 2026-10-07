@@ -329,3 +329,79 @@ svg { flex: none; }
 .cloud-panel span { color: var(--ink-2); }
 .cloud-panel button { color: var(--pink); font-weight: 600; min-height: 32px; }
 .cloud-panel button:disabled { opacity: .5; }
+
+/* Monochrome travel journal. */
+:root {
+  --bg: #fff;
+  --card: #fff;
+  --ink: #171717;
+  --ink-2: #666;
+  --ink-3: #999;
+  --line: #ddd;
+  --pink: #222;
+  --coral: #222;
+  --sky: #222;
+  --mint: #222;
+  --lemon: #222;
+  --lilac: #222;
+  --pink-soft: #f2f2f2;
+  --coral-soft: #f2f2f2;
+  --sky-soft: #f2f2f2;
+  --mint-soft: #f2f2f2;
+  --lemon-soft: #f2f2f2;
+  --lilac-soft: #f2f2f2;
+  --shadow: none;
+  --r: 0px;
+}
+.hero { padding-top: calc(var(--safe-t) + 20px); }
+.chip, .chip.pink { border: 0; border-radius: 0; color: #555; background: #fff; padding: 0; font-family: ui-monospace, monospace; }
+.arch { border-radius: 0; margin-top: 12px; }
+.title { font-size: 30px; font-weight: 900; letter-spacing: -1.5px; border-top: 2px solid #222; padding-top: 16px; }
+.sub { font-family: ui-monospace, monospace; color: #666; }
+.quick { gap: 22px; margin-bottom: 10px; }
+.qbtn, .qbtn.pink, .qbtn.lemon { padding: 0; background: #fff; color: #333; border-radius: 0; }
+.days { gap: 0; border-top: 1px solid #222; border-bottom: 1px solid #ddd; margin: 0 18px 16px; padding: 0; }
+.day { background: #fff; border-radius: 0; height: 64px; border-bottom: 2px solid transparent; }
+.day.on.pink, .day.on.sky, .day.on.lemon, .day.on.mint { background: #fff; border-bottom-color: #222; }
+.day.on b, .day.on small, .day.on.lemon b, .day.on.lemon small { color: #111; }
+.day small { color: #888; }
+.mapcard { border-radius: 0; background: #f3f3f3; border: 1px solid #ddd; }
+.mapcard #map { filter: grayscale(1); }
+.mapcard .route { border-radius: 0; border: 1px solid #ccc; }
+.now { background: #f4f4f4; color: #222; border-radius: 0; border-left: 2px solid #222; }
+.now .dot { background: #555; animation: none; }
+.now button { color: #222; background: #fff; border-radius: 0; }
+.item { padding: 16px 0; border: 0; border-bottom: 1px solid #ddd; border-radius: 0; }
+.item.cur { box-shadow: none; border-left: 2px solid #222; padding-left: 10px; }
+.ico, .k-plane, .k-hotel, .k-eat, .k-sight, .k-sea, .k-shop, .k-move { background: #fff; color: #444; border-radius: 0; }
+.item .tm { font-family: ui-monospace, monospace; font-size: 11px; font-weight: 500; }
+.item .nm { font-size: 15px; letter-spacing: -.3px; }
+.leg { border-left: 0; margin-left: 0; padding: 8px 0 8px 50px; }
+.leg .mi { background: #fff; border-radius: 0; }
+.leg .go { background: #fff; color: #555; border-radius: 0; padding-right: 0; }
+.add { border: 0; border-bottom: 1px solid #222 !important; border-radius: 0; color: #222 !important; }
+.head h2 { letter-spacing: -1px; }
+.ibtn { border-radius: 0; }
+.album-day { padding-bottom: 20px; border-bottom: 1px solid #ddd; }
+.album-day .dh b i { background: #555 !important; border-radius: 0; width: 4px; height: 14px; }
+.addph { background: #fff !important; color: #222 !important; border-radius: 0; }
+.grid .ph, .composer .thumbs img { border-radius: 0; }
+.empty { border: 0; background: #fafafa; border-radius: 0; }
+.note, .pcard { border: 0; border-bottom: 1px solid #ddd; border-radius: 0; padding-left: 0; padding-right: 0; }
+.cat, .cat.on.pink, .cat.on.coral, .cat.on.lemon, .cat.on.sky, .cat.on.mint, .cat.on.lilac { background: #fff; color: #666; border-radius: 0; }
+.cat.on { color: #111; border-bottom: 2px solid #222; }
+.spk, .num, .act span { background: #f5f5f5 !important; color: #333 !important; border-radius: 0; }
+.screen { background: #fff; border-radius: 0; border-top: 2px solid #222; border-bottom: 1px solid #222; padding: 20px 0; }
+.chips button { background: #f4f4f4 !important; color: #333 !important; border-radius: 0; }
+.key { border: 0; border-bottom: 1px solid #ddd; border-radius: 0; }
+.nav .in { border-radius: 0; }
+.nav button { border-radius: 0; }
+.nav button.on[data-v] { background: #fff; color: #111; border-top: 2px solid #222; }
+.sheet, .tip, .composer, .btn, .form input, .form textarea, .form select, .cloud-panel { border-radius: 0; }
+.sheet { border-top: 2px solid #222; }
+.composer, .tip { border: 1px solid #ddd; }
+.cloud-panel { padding: 8px 0; border: 0; border-top: 1px solid #ddd; }
+.toast { border-radius: 0; }
+.btn.red { background: #eee; color: #222; }
+.say { background: #222; }
+button:focus-visible { outline: 2px solid #222; outline-offset: 3px; }

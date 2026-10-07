@@ -1,4 +1,4 @@
-const CACHE = 'chamdaeng-v4';
+const CACHE = 'chamdaeng-v5';
 const ASSETS = [
   './', './index.html', './style.css', './app.js', './data.js', './cloud.js',
   './manifest.webmanifest', './img/taiwan-cat.webp',

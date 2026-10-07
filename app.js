@@ -50,7 +50,7 @@ const P = {
 const ic = (n, s = 22, w = 2) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${P[n] || P.pin}</svg>`;
 const KIND_ICON = { plane: 'plane', hotel: 'hotel', eat: 'eat', sight: 'sight', sea: 'sea', shop: 'shop', move: 'move' };
 const PIN_COLOR = { plane: '#A07CFF', hotel: '#FF5C8A', eat: '#FF8A5B', sight: '#F5B400', sea: '#3BB8F0', shop: '#2FCB8B', move: '#9A8FA0' };
-const COLOR = { pink: '#E46643', sky: '#E46643', lemon: '#E46643', mint: '#E46643', coral: '#E46643', lilac: '#E46643' };
+const COLOR = { pink: '#222222', sky: '#222222', lemon: '#222222', mint: '#222222', coral: '#222222', lilac: '#222222' };
 
 /* ───────── storage (IndexedDB) ───────── */
 const DB = {
@@ -213,7 +213,7 @@ function renderPlan() {
       ${confetti()}
       <div class="hero-top">
         <span class="chip pink">${ic('heart', 14, 2.6)} ${dLabel()}</span>
-        <span class="chip" id="clock">🇹🇼 ${now.hm}</span>
+        <span class="chip" id="clock">TW ${now.hm}</span>
       </div>
       <div class="arch"><img src="img/taiwan-cat.webp" alt="대만 간식과 고양이"></div>
       <h1 class="title"><span>챔</span><span>댕</span><span>슝</span><span>슝</span></h1>
@@ -464,7 +464,26 @@ async function addMemo({ itemId, day, text, blobs }) {
   const m = { id: 'm-' + uid(), itemId, day, text, photos, at: Date.now() };
   await DB.put('memos', m);
   S.memos.push(m);
+  queueCloudBackup();
   return m;
+}
+
+let cloudQueue = Promise.resolve();
+function queueCloudBackup() {
+  cloudQueue = cloudQueue.catch(() => {}).then(async () => {
+    try {
+      await backupCloud();
+      toast('클라우드 저장 완료');
+    } catch (err) {
+      console.warn('클라우드 백업 실패', err);
+      toast('기기에 저장했어요 · 클라우드는 백업 버튼으로 재시도');
+    }
+  });
+}
+async function backupCloud() {
+  const data = { app: 'chamdaeng', v: 1, at: Date.now(), items: S.items, memos: S.memos, blobs: {} };
+  for (const rec of await DB.all('blobs')) data.blobs[rec.id] = await readAsDataURL(rec.blob);
+  await window.TripCloud.upload(data);
 }
 
 async function deleteMemo(id) {
@@ -507,7 +526,7 @@ async function renderAlbum() {
         <button class="ibtn" data-act="import" aria-label="불러오기">${ic('up', 20, 2.2)}</button>
       </div></div>
     <div class="cloud-panel">
-      ${window.TripCloud.email() ? `<span>클라우드 연결됨</span><button data-act="cloud-upload">백업</button><button data-act="cloud-download">복원</button><button data-act="cloud-logout">로그아웃</button>` : `<button data-act="cloud-login">이메일로 클라우드 연결</button>`}
+      <span>사진 자동 백업</span><button data-act="cloud-upload">백업</button><button data-act="cloud-download">복원</button>
     </div>
     ${T.days.map(d => {
       const ms = S.memos.filter(m => m.day === d.date).sort((a, b) => a.at - b.at);
@@ -683,26 +702,12 @@ document.addEventListener('click', async e => {
   if (d.quick) { S.money.input = d.quick; renderMoney(); return; }
 
   switch (d.act) {
-    case 'cloud-login': {
-      const email = prompt('로그인 이메일');
-      if (!email?.trim()) return;
-      try {
-        await window.TripCloud.sendCode(email.trim());
-        const code = prompt('이메일로 받은 인증번호');
-        if (!code?.trim()) return;
-        await window.TripCloud.verify(email.trim(), code.trim());
-        await renderAlbum();
-        toast('클라우드 연결 완료');
-      } catch (err) { toast('연결 실패: ' + err.message); }
-      return;
-    }
     case 'cloud-upload': {
       b.disabled = true;
       toast('백업 중…');
       try {
-        const data = { app: 'chamdaeng', v: 1, at: Date.now(), items: S.items, memos: S.memos, blobs: {} };
-        for (const rec of await DB.all('blobs')) data.blobs[rec.id] = await readAsDataURL(rec.blob);
-        await window.TripCloud.upload(data);
+        await cloudQueue;
+        await backupCloud();
         toast('클라우드 백업 완료');
       } catch (err) { toast('백업 실패: ' + err.message); }
       finally { b.disabled = false; }
@@ -718,10 +723,6 @@ document.addEventListener('click', async e => {
       finally { b.disabled = false; }
       return;
     }
-    case 'cloud-logout':
-      try { await window.TripCloud.logout(); }
-      catch (err) { console.warn('원격 로그아웃 실패', err); }
-      return renderAlbum();
     case 'home-nav': return go(navUrl(currentHotel().q));
     case 'home-taxi': { const h = currentHotel(); return openTaxi({ zh: h.zh, addr: h.addr }); }
     case 'hide-install': localStorage.setItem('hideInstall', '1'); return renderPlan();
@@ -818,7 +819,7 @@ $('#importer').addEventListener('change', e => { const f = e.target.files[0]; if
 setInterval(() => {
   if (S.view !== 'plan') return;
   const now = tpNow();
-  const c = $('#clock'); if (c) c.textContent = `🇹🇼 ${now.hm}`;
+  const c = $('#clock'); if (c) c.textContent = `TW ${now.hm}`;
   const nb = $('#nowbox'); if (nb) nb.innerHTML = nowBanner(itemsOf(S.day), now, now.date === S.day);
 }, 30000);
 
@@ -837,6 +838,7 @@ async function boot() {
   renderNav();
   renderPlan();
   refreshRate(false);
+  window.TripCloud.connect().catch(err => console.warn('익명 클라우드 연결 실패', err));
   if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => { });
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
