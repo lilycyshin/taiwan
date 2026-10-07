@@ -668,7 +668,7 @@ document.addEventListener('click', async e => {
 
   if (b.id === 'say') { b.classList.remove('on'); return; }
   if (d.v) return show(d.v);
-  if (d.day) { S.day = d.day; renderPlan(); return; }
+  if (d.day && !d.act) { S.day = d.day; renderPlan(); return; }
   if (d.item) return openItem(d.item);
   if (d.nav) { e.stopPropagation(); return go(navUrl(d.nav, d.origin || '')); }
   if (d.place) return go(placeUrl(d.place));
