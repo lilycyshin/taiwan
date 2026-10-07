@@ -243,8 +243,8 @@ function renderPlan() {
               <span class="badges">${memoBadge(it.id)}</span>
             </button>
             <div class="timeline-actions">
-              <button data-place="${esc(gq(it))}" aria-label="${esc(it.title)} 지도">지도</button>
-              <button data-act="del-item" data-id="${esc(it.id)}" aria-label="${esc(it.title)} 삭제">삭제</button>
+              <button data-place="${esc(gq(it))}" aria-label="${esc(it.title)} 지도" title="지도"><span aria-hidden="true">${ic('pin', 18, 1.7)}</span></button>
+              <button data-act="del-item" data-id="${esc(it.id)}" aria-label="${esc(it.title)} 삭제" title="삭제"><span aria-hidden="true">${ic('trash', 18, 1.7)}</span></button>
             </div>
           </div>
         </div>`).join('')}

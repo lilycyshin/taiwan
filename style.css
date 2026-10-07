@@ -434,7 +434,8 @@ button:focus-visible { outline: 2px solid #222; outline-offset: 3px; }
 .timeline-entry .item .nm { display: block; margin: 0; white-space: normal; overflow: visible; line-height: 1.5; font-size: 14px; }
 .timeline-option { display: block; font-size: 10px; color: #888; margin-top: 3px; }
 .timeline-actions { display: flex; flex: none; gap: 2px; }
-.timeline-actions button { min-width: 32px; min-height: 40px; padding: 4px; font-size: 11px; color: #777; }
+.timeline-actions button { display: grid; place-items: center; min-width: 36px; min-height: 44px; padding: 4px; color: #777; }
+.timeline-actions button span { display: flex; }
 .timeline-actions button:first-child { color: #333; }
 .timeline-entry.cur .timeline-time { color: #111; font-weight: 700; }
 .timeline-entry.cur .timeline-time::after { background: #111; }
