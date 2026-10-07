@@ -4,10 +4,10 @@ window.TRIP = {
   start: '2026-10-08',
   end: '2026-10-11',
   days: [
-    { date: '2026-10-08', label: '10.8', dow: '목', name: '도착', color: 'pink' },
-    { date: '2026-10-09', label: '10.9', dow: '금', name: '류큐', color: 'sky' },
-    { date: '2026-10-10', label: '10.10', dow: '토', name: '치진', color: 'lemon' },
-    { date: '2026-10-11', label: '10.11', dow: '일', name: '안녕', color: 'mint' }
+    { date: '2026-10-08', label: '10.8', dow: '목', name: '야시장', color: 'pink' },
+    { date: '2026-10-09', label: '10.9', dow: '금', name: '스노클링', color: 'sky' },
+    { date: '2026-10-10', label: '10.10', dow: '토', name: '타이난', color: 'lemon' },
+    { date: '2026-10-11', label: '10.11', dow: '일', name: '가오슝', color: 'mint' }
   ],
   hotels: [
     { name: 'Kindness Hotel 가오슝역점', zh: '康橋商旅 高雄車站館', addr: '高雄市三民區建國二路295號', q: 'Kindness Hotel Kaohsiung Main Station', in: '10/8 15:00', out: '10/10 12:00', perk: '조식 포함 · 로비 커피/아이스크림 무료 · 짐 보관 무료' },
@@ -107,6 +107,26 @@ window.DEFAULT_ITEMS = [
   { id: 'd4-4', day: '2026-10-11', time: '12:00', kind: 'plane', title: '공항으로', zh: '高雄國際機場', q: 'Kaohsiung International Airport', lat: 22.5771, lng: 120.3500,
     move: { mode: 'mrt', text: 'MRT R9 중앙공원 → R4 공항 · 약 15분 · 또는 택시 20분' },
     tip: '출발 2시간 전 도착. 시간은 항공편에 맞게 수정하세요.' }
+];
+
+// Retain the prior defaults to migrate only unchanged seeded items.
+window.PREVIOUS_DEFAULT_ITEMS = window.DEFAULT_ITEMS;
+const revisedCityDays = [
+  { id: 'tainan-1', day: '2026-10-10', time: '09:00', kind: 'move', title: '타이난으로', zh: '臺南車站', q: 'Tainan Railway Station Taiwan', lat: 22.9971, lng: 120.2129, move: { mode: 'mrt', text: '가오슝역 → 타이난역 · TRA 열차' }, tip: '출발 시간과 열차편은 당일 확인. 숙소 이동·짐 보관은 예약에 맞게 조정하세요.' },
+  { id: 'tainan-2', day: '2026-10-10', time: '10:00', kind: 'sight', title: '적감루', zh: '赤崁樓', q: 'Chihkan Tower Tainan', lat: 22.9974, lng: 120.2025, move: { mode: 'taxi', text: '타이난역에서 택시 또는 도보' } },
+  { id: 'tainan-3', day: '2026-10-10', time: '12:00', kind: 'eat', title: '타이난 점심', zh: '國華街', q: 'Guohua Street Tainan', lat: 22.9946, lng: 120.1977, move: { mode: 'walk', text: '국화거리 로컬 음식' } },
+  { id: 'tainan-4', day: '2026-10-10', time: '13:30', kind: 'sight', title: '타이난 공자묘', zh: '臺南孔子廟', q: 'Tainan Confucius Temple', lat: 22.9904, lng: 120.2043, move: { mode: 'walk', text: '도보 또는 택시' } },
+  { id: 'tainan-5', day: '2026-10-10', time: '15:00', kind: 'sight', title: '신농거리', zh: '神農街', q: 'Shennong Street Tainan', lat: 22.998, lng: 120.1956, move: { mode: 'taxi', text: '골목 산책 · 카페' } },
+  { id: 'tainan-6', day: '2026-10-10', time: '18:00', kind: 'move', title: '가오슝으로 복귀', zh: '高雄車站', q: 'Kaohsiung Main Station', lat: 22.6394, lng: 120.3025, move: { mode: 'mrt', text: '타이난역 → 가오슝역 · TRA 열차' } },
+  { id: 'city-1', day: '2026-10-11', time: '09:00', kind: 'sight', title: '연지담 · 용호탑', zh: '蓮池潭 龍虎塔', q: 'Dragon and Tiger Pagodas Kaohsiung', lat: 22.6806, lng: 120.2951 },
+  { id: 'city-2', day: '2026-10-11', time: '11:00', kind: 'sight', title: '빛의 돔', zh: '捷運美麗島站 光之穹頂', q: 'Formosa Boulevard Station Dome of Light', lat: 22.6313, lng: 120.3021, move: { mode: 'mrt', text: '메이리다오역' } },
+  { id: 'city-3', day: '2026-10-11', time: '12:30', kind: 'eat', title: '옌청 점심', zh: '鹽埕區', q: 'Yancheng District Kaohsiung', lat: 22.6247, lng: 120.2868, move: { mode: 'mrt', text: '옌청푸역 주변' } },
+  { id: 'city-4', day: '2026-10-11', time: '14:00', kind: 'sight', title: '보얼예술특구', zh: '駁二藝術特區', q: 'Pier-2 Art Center', lat: 22.6199, lng: 120.2814, move: { mode: 'walk', text: '항구 산책' } },
+  { id: 'city-5', day: '2026-10-11', time: '16:00', kind: 'shop', title: '기념품 · 시내 산책', zh: '漢神百貨', q: 'Hanshin Department Store Chenggong', lat: 22.6195, lng: 120.2972, tip: '체크아웃·공항 이동은 실제 항공편에 맞춰 일정을 추가해주세요.' }
+];
+window.DEFAULT_ITEMS = [
+  ...window.PREVIOUS_DEFAULT_ITEMS.filter(it => it.day < '2026-10-10'),
+  ...revisedCityDays
 ];
 
 window.PHRASES = [

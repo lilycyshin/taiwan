@@ -111,8 +111,7 @@ const S = {
   money: { dir: 'tw', input: '0' },
   rate: null,
   pending: [],
-  pickCb: null,
-  map: null
+  pickCb: null
 };
 
 /* ───────── time helpers (대만 시간 UTC+8) ───────── */
@@ -228,8 +227,10 @@ function renderPlan() {
       ${T.days.map(x => `<button class="day ${x.color} ${x.date === S.day ? 'on' : ''}" data-day="${x.date}"><b>${x.label}</b><small>${x.dow} · ${x.name}</small></button>`).join('')}
     </div>
     <div id="nowbox">${nowBanner(list, now, isToday)}</div>
-    <div class="mapcard"><div id="map"></div><div class="off" id="mapoff" hidden>지도는 온라인에서 보여요</div>
-      <button class="route" data-act="day-route">${ic('route', 16, 2.4)} 동선</button></div>
+    <div class="mapcard"><div id="map"></div><div class="off" id="mapoff" hidden>지도는 온라인에서 보여요</div></div>
+    <div class="map-controls"><select id="map-place" aria-label="Google Maps에 표시할 장소">
+      ${list.map(it => `<option value="${esc(it.id)}">${esc(it.time)} · ${esc(it.title)}</option>`).join('')}
+    </select><button data-act="day-route">${ic('route', 16, 2.4)} 동선</button></div>
     <div class="tl">
       ${list.map((it, i) => `
         ${i > 0 || it.move ? legHtml(it, list[i - 1]) : ''}
@@ -274,40 +275,32 @@ function nowBanner(list, now, isToday) {
 }
 
 function drawMap(list) {
-  if (S.map) { S.map.remove(); S.map = null; }
   const box = $('#map');
   if (!box) return;
-  if (!window.L) {
-    if (!navigator.onLine) { $('#mapoff').hidden = false; return; }
-    window.addEventListener('load', () => { if (S.view === 'plan' && window.L) drawMap(itemsOf(S.day)); }, { once: true });
-    return;
+  const select = $('#map-place');
+  function update(it) {
+    box.replaceChildren();
+    $('#mapoff').hidden = navigator.onLine;
+    if (!navigator.onLine) return;
+    const url = new URL('https://www.google.com/maps');
+    const query = it && Number.isFinite(it.lat) && Number.isFinite(it.lng)
+      ? `${it.lat},${it.lng}` : it ? gq(it) : 'Kaohsiung Taiwan';
+    url.searchParams.set('q', query);
+    url.searchParams.set('output', 'embed');
+    url.searchParams.set('hl', 'ko');
+    url.searchParams.set('z', '15');
+    const frame = document.createElement('iframe');
+    frame.src = url.toString();
+    frame.title = `Google Maps · ${it?.title || '가오슝'}`;
+    frame.loading = 'lazy';
+    frame.referrerPolicy = 'no-referrer-when-downgrade';
+    frame.allowFullscreen = true;
+    box.append(frame);
   }
-  const pts = list.filter(i => typeof i.lat === 'number');
-  const map = L.map(box, { zoomControl: false, attributionControl: true, scrollWheelZoom: false });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19, subdomains: 'abcd', attribution: '© OpenStreetMap © CARTO'
-  }).addTo(map);
-  const seen = new Map();
-  pts.forEach((it, i) => {
-    const key = it.lat.toFixed(4) + ',' + it.lng.toFixed(4);
-    if (seen.has(key)) { seen.get(key).push(i + 1); return; }
-    seen.set(key, [i + 1]);
-  });
-  const latlngs = pts.map(i => [i.lat, i.lng]);
-  if (latlngs.length > 1) L.polyline(latlngs, { color: '#FF5C8A', weight: 3, dashArray: '6 7', opacity: .8 }).addTo(map);
-  const done = new Set();
-  pts.forEach((it, i) => {
-    const key = it.lat.toFixed(4) + ',' + it.lng.toFixed(4);
-    if (done.has(key)) return;
-    done.add(key);
-    const nums = seen.get(key);
-    const html = `<div class="pin" style="background:${PIN_COLOR[it.kind] || '#FF5C8A'}">${nums[0]}</div>`;
-    L.marker([it.lat, it.lng], { icon: L.divIcon({ html, className: '', iconSize: [26, 26], iconAnchor: [13, 13] }) })
-      .addTo(map).on('click', () => openItem(it.id));
-  });
-  if (latlngs.length) map.fitBounds(latlngs, { padding: [28, 28], maxZoom: 15 });
-  else map.setView([22.627, 120.30], 12);
-  S.map = map;
+  const initial = list.find(it => it.kind === 'sight') || list[0];
+  if (initial) select.value = initial.id;
+  select.onchange = () => update(list.find(it => it.id === select.value));
+  update(initial);
 }
 
 /* ───────── item sheet ───────── */
@@ -377,10 +370,15 @@ const KINDS = [['sight', '구경'], ['eat', '먹기'], ['sea', '바다'], ['hote
 const MODES = [['walk', '도보'], ['mrt', 'MRT'], ['lrt', '경전철'], ['taxi', '택시'], ['shuttle', '버스/셔틀'], ['ferry', '페리'], ['scooter', '스쿠터'], ['plane', '비행기']];
 function openEdit(id, day) {
   const it = id ? S.items.find(x => x.id === id) : { id: '', day, time: '12:00', kind: 'sight', title: '', zh: '', addr: '', q: '', tip: '', move: { mode: 'walk', text: '' } };
+  let chosenPlace = null;
   const opt = (arr, v) => arr.map(([k, l]) => `<option value="${k}" ${k === v ? 'selected' : ''}>${l}</option>`).join('');
   openSheet(`
     <div class="sh-top"><div class="txt"><h3>${id ? '일정 수정' : '일정 추가'}</h3></div></div>
     <form class="form" id="edit-form">
+      <label for="place-query">장소 검색</label>
+      <div class="place-search"><input id="place-query" autocomplete="off" placeholder="예: 타이난 공자묘" value="${esc(it.title)}"><button type="button" id="place-search">검색</button></div>
+      <div class="place-tools"><a id="place-external" href="${esc(placeUrl(it.title || 'Kaohsiung Taiwan'))}" target="_blank" rel="noopener">Google Maps에서 열기</a><button type="button" id="place-key">API 키 설정</button></div>
+      <div id="place-results" aria-live="polite"></div>
       <div class="two">
         <div><label>날짜</label><select name="day">${T.days.map(d => `<option value="${d.date}" ${d.date === it.day ? 'selected' : ''}>${d.label} (${d.dow})</option>`).join('')}</select></div>
         <div><label>시간</label><input name="time" type="time" value="${esc(it.time)}" required></div>
@@ -392,8 +390,8 @@ function openEdit(id, day) {
       </div>
       <label>이동 방법</label><input name="mtext" value="${esc(it.move?.text)}" placeholder="예: MRT R11 → R10 · 2분">
       <label>지도 검색어 (영어/중국어)</label><input name="q" value="${esc(it.q)}" placeholder="예: Pier-2 Art Center">
-      <label>중국어 이름 · 택시카드</label><input name="zh" value="${esc(it.zh)}" placeholder="예: 駁二藝術特區">
-      <label>중국어 주소</label><input name="addr" value="${esc(it.addr)}">
+      <label>현지 이름 · 택시카드</label><input name="zh" value="${esc(it.zh)}" placeholder="예: 駁二藝術特區">
+      <label>장소 주소</label><input name="addr" value="${esc(it.addr)}">
       <label>팁</label><textarea name="tip">${esc(it.tip)}</textarea>
       <div class="btns">
         ${id ? `<button type="button" class="btn red" data-act="del-item" data-id="${id}">${ic('trash', 18, 2.2)}</button>` : ''}
@@ -402,21 +400,100 @@ function openEdit(id, day) {
       </div>
     </form>
   `);
-  $('#edit-form').onsubmit = async e => {
+  const form = $('#edit-form');
+  const searchInput = $('#place-query');
+  const results = $('#place-results');
+  searchInput.oninput = () => { $('#place-external').href = placeUrl(searchInput.value.trim() || 'Kaohsiung Taiwan'); };
+  $('#place-key').onclick = () => {
+    const key = prompt('Google Maps 브라우저 API 키\nMaps JavaScript API · Places API (New) 활성화 필요', localStorage.getItem('trip-google-maps-key') || '');
+    if (key === null) return;
+    if (key.trim()) localStorage.setItem('trip-google-maps-key', key.trim());
+    else localStorage.removeItem('trip-google-maps-key');
+    toast('키 설정을 저장했어요. 앱을 다시 열면 적용됩니다');
+  };
+  $('#place-search').onclick = async () => {
+    const query = searchInput.value.trim();
+    if (!query) { results.textContent = '검색할 장소를 입력해주세요'; return; }
+    const button = $('#place-search');
+    button.disabled = true;
+    results.textContent = '검색 중…';
+    try {
+      const places = await window.TripPlaces.search(query, form.elements.day.value);
+      if ($('#edit-form') !== form) return;
+      results.replaceChildren();
+      for (const place of places) {
+        const result = document.createElement('button');
+        result.type = 'button';
+        result.className = 'place-result';
+        const name = document.createElement('strong');
+        name.textContent = place.displayName;
+        const address = document.createElement('small');
+        address.textContent = place.formattedAddress || '';
+        result.append(name, address);
+        result.onclick = () => {
+          chosenPlace = {
+            placeId: place.id,
+            lat: place.location?.lat(), lng: place.location?.lng(),
+            mapsUrl: place.googleMapsURI
+          };
+          form.elements.title.value = place.displayName;
+          form.elements.addr.value = place.formattedAddress || '';
+          form.elements.q.value = `${place.displayName} ${place.formattedAddress || ''}`.trim();
+          results.replaceChildren();
+          results.textContent = '장소 선택 완료';
+          const credit = document.createElement('img');
+          credit.src = 'https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png';
+          credit.alt = 'Powered by Google';
+          credit.className = 'google-attribution';
+          results.append(credit);
+          for (const attribution of place.attributions || []) {
+            const link = document.createElement('a');
+            link.textContent = attribution.provider || '';
+            if (/^https?:\/\//.test(attribution.providerURI || '')) link.href = attribution.providerURI;
+            link.target = '_blank'; link.rel = 'noopener';
+            results.append(link);
+          }
+        };
+        results.append(result);
+        for (const attribution of place.attributions || []) {
+          const link = document.createElement('a');
+          link.textContent = attribution.provider || '';
+          if (/^https?:\/\//.test(attribution.providerURI || '')) link.href = attribution.providerURI;
+          link.target = '_blank'; link.rel = 'noopener';
+          results.append(link);
+        }
+      }
+      if (!places.length) results.textContent = '검색 결과가 없어요';
+      const logo = document.createElement('img');
+      logo.src = 'https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png';
+      logo.alt = 'Powered by Google';
+      logo.className = 'google-attribution';
+      results.append(logo);
+    } catch (error) { results.textContent = error.message; }
+    finally { button.disabled = false; }
+  };
+  searchInput.onkeydown = e => {
+    if (e.key === 'Enter') { e.preventDefault(); $('#place-search').click(); }
+  };
+  form.elements.q.oninput = () => { chosenPlace = null; };
+  form.onsubmit = async e => {
     e.preventDefault();
     const f = new FormData(e.target);
     const old = id ? S.items.find(x => x.id === id) : {};
     const next = {
       ...old,
+      ...(chosenPlace || {}),
+      userEdited: true,
       id: id || 'u-' + uid(),
       day: f.get('day'), time: f.get('time'), kind: f.get('kind'),
       title: f.get('title').trim(), q: f.get('q').trim(), zh: f.get('zh').trim(), addr: f.get('addr').trim(), tip: f.get('tip').trim(),
       move: f.get('mtext').trim() ? { mode: f.get('mode'), text: f.get('mtext').trim() } : null
     };
-    if (old.q !== next.q && old.lat != null) { delete next.lat; delete next.lng; }
+    if (!chosenPlace && old.q !== next.q) { delete next.lat; delete next.lng; delete next.placeId; delete next.mapsUrl; }
     await DB.put('items', next);
     const i = S.items.findIndex(x => x.id === next.id);
     if (i >= 0) S.items[i] = next; else S.items.push(next);
+    queueCloudBackup();
     S.day = next.day;
     closeSheet();
     renderPlan();
@@ -802,6 +879,8 @@ document.addEventListener('click', async e => {
 });
 
 $('#scrim').addEventListener('click', closeSheet);
+window.addEventListener('online', () => { if (S.view === 'plan') drawMap(itemsOf(S.day)); });
+window.addEventListener('offline', () => { if (S.view === 'plan') drawMap(itemsOf(S.day)); });
 $('#say').addEventListener('click', () => $('#say').classList.remove('on'));
 $('#picker').addEventListener('change', e => {
   const files = [...e.target.files];
@@ -828,6 +907,21 @@ async function loadState() {
   S.items = await DB.all('items');
   S.memos = await DB.all('memos');
 }
+async function migrateItinerary() {
+  if (localStorage.getItem('trip-itinerary-version') === '2') return;
+  const affected = S.items.filter(it => it.day >= '2026-10-10');
+  // Keep a recoverable copy before updating seeded defaults.
+  localStorage.setItem('trip-previous-itinerary', JSON.stringify(affected));
+  const previous = new Map(window.PREVIOUS_DEFAULT_ITEMS.map(it => [it.id, it]));
+  const obsolete = affected.filter(it => !it.userEdited
+    && JSON.stringify(it) === JSON.stringify(previous.get(it.id))
+    && !S.memos.some(m => m.itemId === it.id));
+  const additions = window.DEFAULT_ITEMS.filter(it => it.day >= '2026-10-10' && !S.items.some(old => old.id === it.id));
+  await DB.putMany('items', additions);
+  for (const it of obsolete) await DB.del('items', it.id);
+  localStorage.setItem('trip-itinerary-version', '2');
+  await loadState();
+}
 async function boot() {
   await DB.open();
   if (!localStorage.getItem('seeded')) {
@@ -835,6 +929,7 @@ async function boot() {
     localStorage.setItem('seeded', '1');
   }
   await loadState();
+  await migrateItinerary();
   renderNav();
   renderPlan();
   refreshRate(false);

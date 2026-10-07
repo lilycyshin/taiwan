@@ -1,11 +1,9 @@
-const CACHE = 'chamdaeng-v5';
+const CACHE = 'chamdaeng-v7';
 const ASSETS = [
-  './', './index.html', './style.css', './app.js', './data.js', './cloud.js',
+  './', './index.html', './style.css', './app.js', './data.js', './cloud.js', './places.js',
   './manifest.webmanifest', './img/taiwan-cat.webp',
   './icons/icon-192.png', './icons/icon-512.png',
-  'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+  'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'
 ];
 
 self.addEventListener('install', e => {
@@ -19,8 +17,8 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.hostname.endsWith('.supabase.co')) return;
-  // 지도 타일은 캐시하지 않음 (용량)
-  if (/basemaps\.cartocdn|tile\./.test(url.host)) return;
+  // Google Maps manages its own online resources.
+  if (url.hostname === 'www.google.com' || url.hostname.endsWith('.googleapis.com') || url.hostname.endsWith('.gstatic.com')) return;
   // 환율 API는 항상 네트워크
   if (url.host.includes('er-api.com')) return;
   e.respondWith(
