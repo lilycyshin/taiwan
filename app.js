@@ -122,6 +122,9 @@ function tpNow() {
   return { date: `${g('year')}-${g('month')}-${g('day')}`, hm: `${h}:${g('minute')}`, min: (+h) * 60 + (+g('minute')) };
 }
 const toMin = hm => { const [h, m] = (hm || '0:0').split(':').map(Number); return h * 60 + (m || 0); };
+const itemMin = it => toMin(it.time) - (it.timeZone === 'Asia/Seoul' ? 60 : 0);
+const timeZoneLabel = it => it.timeZone === 'Asia/Seoul' ? '한국' : it.timeZone === 'Asia/Taipei' ? '대만' : '';
+const itemDateTime = it => `${it.day}T${it.time}${it.timeZone === 'Asia/Seoul' ? '+09:00' : '+08:00'}`;
 const inTrip = d => d >= T.start && d <= T.end;
 const dayOf = date => T.days.find(d => d.date === date);
 function dLabel() {
@@ -138,7 +141,7 @@ function currentHotel() {
   if (n.date < '2026-10-10' || (n.date === '2026-10-10' && n.min < 12 * 60)) return T.hotels[0];
   return T.hotels[1];
 }
-const itemsOf = date => S.items.filter(i => i.day === date).sort((a, b) => toMin(a.time) - toMin(b.time));
+const itemsOf = date => S.items.filter(i => i.day === date).sort((a, b) => itemMin(a) - itemMin(b));
 
 /* ───────── maps links ───────── */
 const gq = it => it.q || it.zh || it.title;
@@ -153,7 +156,7 @@ const navUrl = (dest, origin) => {
 const placeUrl = q => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 function dayRouteUrl(list) {
   const pts = [];
-  list.forEach(i => { const q = gq(i); if (pts[pts.length - 1] !== q) pts.push(q); });
+  list.filter(i => i.timeZone !== 'Asia/Seoul').forEach(i => { const q = gq(i); if (pts[pts.length - 1] !== q) pts.push(q); });
   if (pts.length < 2) return placeUrl(pts[0] || 'Kaohsiung');
   const u = new URL('https://www.google.com/maps/dir/');
   u.searchParams.set('api', '1');
@@ -204,7 +207,7 @@ function renderPlan() {
   const list = itemsOf(S.day);
   const isToday = now.date === S.day;
   let curIdx = -1;
-  if (isToday) list.forEach((it, i) => { if (toMin(it.time) <= now.min) curIdx = i; });
+  if (isToday) list.forEach((it, i) => { if (itemMin(it) <= now.min) curIdx = i; });
   const showInstall = !matchMedia('(display-mode: standalone)').matches && !navigator.standalone && !localStorage.getItem('hideInstall');
 
   el.innerHTML = `
@@ -214,7 +217,7 @@ function renderPlan() {
         <span class="chip pink">${ic('heart', 14, 2.6)} ${dLabel()}</span>
         <span class="chip" id="clock">TW ${now.hm}</span>
       </div>
-      <div class="arch"><img src="img/taiwan-cat.webp" alt="대만 간식과 고양이"></div>
+      <div class="arch"><img src="${esc(d.image || 'img/taiwan-cat.webp')}" alt="${esc(d.imageAlt || '대만 간식과 고양이')}"></div>
       <h1 class="title"><span>챔</span><span>댕</span><span>슝</span><span>슝</span></h1>
       <div class="sub">10.8 – 10.11 · 가오슝</div>
       <div class="quick">
@@ -229,14 +232,14 @@ function renderPlan() {
     <div id="nowbox">${nowBanner(list, now, isToday)}</div>
     <div class="mapcard"><div id="map"></div><div class="off" id="mapoff" hidden>지도는 온라인에서 보여요</div></div>
     <div class="map-controls"><select id="map-place" aria-label="Google Maps에 표시할 장소">
-      ${list.map(it => `<option value="${esc(it.id)}">${esc(it.time)} · ${esc(it.title)}</option>`).join('')}
+      ${list.map(it => `<option value="${esc(it.id)}">${esc(it.time)}${timeZoneLabel(it) ? ` (${timeZoneLabel(it)})` : ''} · ${esc(it.title)}</option>`).join('')}
     </select><button data-act="day-route">${ic('route', 16, 2.4)} 동선</button></div>
     <p class="travel-note">이동시간은 예상 · 실제 노선은 길찾기에서 확인</p>
     <div class="tl">
       ${list.map((it, i) => `
         ${i > 0 || it.move ? legHtml(it, list[i - 1]) : ''}
         <div class="timeline-entry ${i === curIdx ? 'cur' : ''} ${isToday && i < curIdx ? 'past' : ''}">
-          <time class="timeline-time" datetime="${esc(it.day)}T${esc(it.time)}">${esc(it.time)}</time>
+          <time class="timeline-time" datetime="${esc(itemDateTime(it))}">${esc(it.time)}${timeZoneLabel(it) ? `<small class="timeline-zone">${timeZoneLabel(it)}</small>` : ''}</time>
           <div class="timeline-content">
             <button class="item" data-item="${esc(it.id)}">
               <span class="txt"><span class="nm">${esc(it.title)}</span>${it.optional ? '<small class="timeline-option">옵션</small>' : ''}</span>
@@ -269,20 +272,20 @@ function legHtml(it, prev) {
   const origin = prev ? gq(prev) : '';
   return `<div class="leg">
     <span class="lt">${esc(summary)}</span>
-    <button class="go" data-nav="${esc(gq(it))}" data-origin="${esc(origin)}">길찾기</button>
+    ${m.mode === 'plane' ? '' : `<button class="go" data-nav="${esc(gq(it))}" data-origin="${esc(origin)}">길찾기</button>`}
   </div>`;
 }
 
 function nowBanner(list, now, isToday) {
   if (!isToday) return '';
-  const next = list.find(it => toMin(it.time) > now.min);
+  const next = list.find(it => itemMin(it) > now.min);
   if (!next) {
     const h = currentHotel();
     return `<div class="now"><span class="dot"></span><span class="t"><small>오늘 일정 끝</small><b>${esc(h.name)}</b></span><button data-nav="${esc(h.q)}">${ic('home', 20, 2.4)}</button></div>`;
   }
-  const left = toMin(next.time) - now.min;
+  const left = itemMin(next) - now.min;
   const ls = left >= 60 ? `${Math.floor(left / 60)}시간 ${left % 60}분 뒤` : `${left}분 뒤`;
-  return `<div class="now"><span class="dot"></span><span class="t"><small>다음 · ${esc(next.time)} · ${ls}</small><b>${esc(next.title)}</b></span><button data-nav="${esc(gq(next))}">${ic('nav', 20, 2.4)}</button></div>`;
+  return `<div class="now"><span class="dot"></span><span class="t"><small>다음 · ${esc(next.time)}${timeZoneLabel(next) ? ` (${timeZoneLabel(next)})` : ''} · ${ls}</small><b>${esc(next.title)}</b></span><button data-nav="${esc(gq(next))}">${ic('nav', 20, 2.4)}</button></div>`;
 }
 
 function drawMap(list) {
@@ -340,7 +343,7 @@ async function openItem(id) {
   openSheet(`
     <div class="sh-top">
       <span class="ico k-${it.kind}" style="width:52px;height:52px;border-radius:18px">${ic(KIND_ICON[it.kind], 26, 2.2)}</span>
-      <div class="txt"><div class="tm">${esc(dayOf(it.day)?.label)} · ${esc(it.time)}</div><h3>${esc(it.title)}</h3>${it.zh ? `<div class="zh">${esc(it.zh)}</div>` : ''}</div>
+      <div class="txt"><div class="tm">${esc(dayOf(it.day)?.label)} · ${esc(it.time)}${timeZoneLabel(it) ? ` (${timeZoneLabel(it)}시간)` : ''}</div><h3>${esc(it.title)}</h3>${it.zh ? `<div class="zh">${esc(it.zh)}</div>` : ''}</div>
       <button class="ibtn" data-act="edit-item" data-id="${it.id}">${ic('edit', 18, 2.2)}</button>
     </div>
     <div class="acts4">
@@ -392,7 +395,7 @@ function openEdit(id, day) {
       <div id="place-results" aria-live="polite"></div>
       <div class="two">
         <div><label>날짜</label><select name="day">${T.days.map(d => `<option value="${d.date}" ${d.date === it.day ? 'selected' : ''}>${d.label} (${d.dow})</option>`).join('')}</select></div>
-        <div><label>시간</label><input name="time" type="time" value="${esc(it.time)}" required></div>
+        <div><label>시간${timeZoneLabel(it) ? ` (${timeZoneLabel(it)}시간)` : ''}</label><input name="time" type="time" value="${esc(it.time)}" required></div>
       </div>
       <label>이름</label><input name="title" value="${esc(it.title)}" required placeholder="예: 보얼예술특구">
       <div class="two">
@@ -934,19 +937,28 @@ async function loadState() {
   S.memos = await DB.all('memos');
 }
 async function migrateItinerary() {
-  if (localStorage.getItem('trip-itinerary-version') === '3') return;
+  const version = localStorage.getItem('trip-itinerary-version');
+  if (version === '4') return;
   const affected = S.items.filter(it => it.day >= '2026-10-10');
   // Keep a recoverable copy before updating seeded defaults.
-  localStorage.setItem('trip-previous-itinerary-v3', JSON.stringify(affected));
-  const previous = new Map([...window.PREVIOUS_DEFAULT_ITEMS, ...window.PREVIOUS_CITY_DEFAULT_ITEMS].map(it => [it.id, it]));
+  localStorage.setItem('trip-previous-itinerary-v4', JSON.stringify(S.items));
+  const previousFlight = new Map(window.PREVIOUS_FLIGHT_DEFAULT_ITEMS.map(it => [it.id, it]));
+  const previous = new Map([...window.PREVIOUS_DEFAULT_ITEMS, ...window.PREVIOUS_CITY_DEFAULT_ITEMS, ...window.PREVIOUS_FLIGHT_DEFAULT_ITEMS].map(it => [it.id, it]));
   const obsolete = affected.filter(it => !it.userEdited
     && !window.DEFAULT_ITEMS.some(next => next.id === it.id)
     && JSON.stringify(it) === JSON.stringify(previous.get(it.id))
     && !S.memos.some(m => m.itemId === it.id));
-  const additions = window.DEFAULT_ITEMS.filter(it => it.day >= '2026-10-10' && !S.items.some(old => old.id === it.id));
-  await DB.putMany('items', additions);
+  const additions = window.DEFAULT_ITEMS.filter(it => !S.items.some(old => old.id === it.id)
+    && (!previousFlight.has(it.id) || (version !== '3' && it.day >= '2026-10-10')));
+  const updates = window.DEFAULT_ITEMS.filter(next => {
+    const old = S.items.find(it => it.id === next.id);
+    return old && !old.userEdited
+      && JSON.stringify(old) === JSON.stringify(previous.get(old.id))
+      && (old.q === next.q || !S.memos.some(m => m.itemId === old.id));
+  });
+  await DB.putMany('items', [...additions, ...updates]);
   for (const it of obsolete) await DB.del('items', it.id);
-  localStorage.setItem('trip-itinerary-version', '3');
+  localStorage.setItem('trip-itinerary-version', '4');
   await loadState();
 }
 async function boot() {

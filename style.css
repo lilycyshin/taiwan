@@ -319,7 +319,7 @@ svg { flex: none; }
   --lilac-soft: #FCF0EB;
 }
 .chip.pink, .leg .go, .nav button.on[data-v], .qbtn.pink, .qbtn.lemon { color: var(--pink); background: var(--pink-soft); border-color: #F4DBD2; }
-.arch { aspect-ratio: 1.15; background: #fff; border: 0; }
+.arch { aspect-ratio: 1; background: #fff; border: 0; }
 .arch img { object-fit: contain; object-position: center; }
 .title { font-size: 25px; }
 .install { display: none; }
@@ -445,3 +445,4 @@ button:focus-visible { outline: 2px solid #222; outline-offset: 3px; }
 .tl .leg .lt { font-size: 11px; font-weight: 400; }
 .tl .leg .go { height: auto; min-height: 32px; font-size: 11px; padding: 0 4px; }
 .travel-note { margin: 0 18px 12px; font-size: 10px; color: #888; }
+.timeline-zone { display: block; font: 9px var(--body); color: #888; margin-top: 2px; }

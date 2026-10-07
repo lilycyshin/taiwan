@@ -4,10 +4,10 @@ window.TRIP = {
   start: '2026-10-08',
   end: '2026-10-11',
   days: [
-    { date: '2026-10-08', label: '10.8', dow: '목', name: '야시장', color: 'pink' },
-    { date: '2026-10-09', label: '10.9', dow: '금', name: '스노클링', color: 'sky' },
-    { date: '2026-10-10', label: '10.10', dow: '토', name: '타이난', color: 'lemon' },
-    { date: '2026-10-11', label: '10.11', dow: '일', name: '가오슝', color: 'mint' }
+    { date: '2026-10-08', label: '10.8', dow: '목', name: '야시장', color: 'pink', image: 'img/day-1.webp', imageAlt: '먹으러 가는 고양이' },
+    { date: '2026-10-09', label: '10.9', dow: '금', name: '스노클링', color: 'sky', image: 'img/day-2.webp', imageAlt: '대만 맥주를 든 고양이' },
+    { date: '2026-10-10', label: '10.10', dow: '토', name: '타이난', color: 'lemon', image: 'img/day-3.webp', imageAlt: '배부른 고양이' },
+    { date: '2026-10-11', label: '10.11', dow: '일', name: '가오슝', color: 'mint', image: 'img/day-4.webp', imageAlt: '대만에 감사하는 고양이' }
   ],
   hotels: [
     { name: 'Kindness Hotel 가오슝역점', zh: '康橋商旅 高雄車站館', addr: '高雄市三民區建國二路295號', q: 'Kindness Hotel Kaohsiung Main Station', in: '10/8 15:00', out: '10/10 12:00', perk: '조식 포함 · 로비 커피/아이스크림 무료 · 짐 보관 무료' },
@@ -140,6 +140,28 @@ window.DEFAULT_ITEMS = [
   ...window.PREVIOUS_DEFAULT_ITEMS.filter(it => it.day < '2026-10-10'),
   ...tainanDayTrip,
   ...revisedCityDays.filter(it => it.day === '2026-10-11')
+];
+
+window.PREVIOUS_FLIGHT_DEFAULT_ITEMS = structuredClone(window.DEFAULT_ITEMS);
+window.TRIP.flights = [
+  { number: '7C6123', departure: '김포 GMP', departureAt: '2026-10-08T09:45:00+09:00', arrival: '가오슝 KHH', arrivalAt: '2026-10-08T12:00:00+08:00', duration: '3시간 15분' },
+  { number: 'TW0672', departure: '가오슝 KHH', departureAt: '2026-10-11T16:10:00+08:00', arrival: '인천 ICN', arrivalAt: '2026-10-11T20:00:00+09:00', duration: '2시간 50분' }
+];
+const flightUpdates = {
+  'd1-1': { flight: '7C6123', timeZone: 'Asia/Taipei', tip: '제주항공 7C6123 · 김포 09:45(한국) → 가오슝 12:00(대만) · 3시간 15분. 입국 후 MRT R4 공항역으로 이동하세요.', move: { mode: 'plane', text: '비행 · 3시간 15분' } },
+  'city-2': { time: '10:30' },
+  'city-3': { time: '11:30' },
+  'city-4': { time: '12:30' },
+  'city-5': { time: '13:20', kind: 'hotel', title: '호텔 · 짐 찾기', zh: '漢來大飯店', q: 'Grand Hi-Lai Hotel Kaohsiung', lat: 22.6198, lng: 120.2982, tip: '체크아웃 후 맡긴 짐을 찾고 공항으로 이동하세요.' }
+};
+window.DEFAULT_ITEMS = [
+  ...window.DEFAULT_ITEMS.map(it => ({ ...it, ...(flightUpdates[it.id] || {}) })),
+  { id: 'flight-out-checkin', day: '2026-10-08', time: '07:45', timeZone: 'Asia/Seoul', kind: 'plane', title: '김포공항 · 출국 수속', zh: '', q: 'Gimpo International Airport international terminal', flight: '7C6123', tip: '한국시간 기준. 출발 2시간 전 도착을 위한 권장 일정입니다. 실제 체크인 마감과 탑승구는 항공사 안내를 확인하세요.' },
+  { id: 'flight-out-depart', day: '2026-10-08', time: '09:45', timeZone: 'Asia/Seoul', kind: 'plane', title: '7C6123 · 김포 출발', q: 'Gimpo International Airport international terminal', flight: '7C6123', tip: '한국시간 09:45 출발 · 대만시간 12:00 도착. 예약 메일 기준이며 최신 운항 정보와 전자티켓을 확인하세요.' },
+  { id: 'flight-home-transfer', day: '2026-10-11', time: '13:40', kind: 'move', title: '가오슝 공항으로', zh: '高雄國際機場', q: 'Kaohsiung International Airport', lat: 22.5771, lng: 120.35, move: { mode: 'taxi', text: '택시 · 약 20–30분' }, tip: '14:10까지 공항 도착을 목표로 출발하세요. 교통 상황에 따라 더 일찍 이동하세요.' },
+  { id: 'flight-home-checkin', day: '2026-10-11', time: '14:10', timeZone: 'Asia/Taipei', kind: 'plane', title: '가오슝 공항 · 귀국 수속', zh: '高雄國際機場', q: 'Kaohsiung International Airport', lat: 22.5771, lng: 120.35, flight: 'TW0672', tip: '대만시간 기준. 출발 2시간 전 도착을 위한 권장 일정입니다. 체크인 마감·탑승구는 항공사 안내를 확인하세요.' },
+  { id: 'flight-home-depart', day: '2026-10-11', time: '16:10', timeZone: 'Asia/Taipei', kind: 'plane', title: 'TW0672 · 가오슝 출발', zh: '高雄國際機場', q: 'Kaohsiung International Airport', lat: 22.5771, lng: 120.35, flight: 'TW0672', tip: '대만시간 16:10 출발 · 한국시간 20:00 인천 도착. 예약 메일 기준이며 최신 운항 정보와 전자티켓을 확인하세요.' },
+  { id: 'flight-home-arrive', day: '2026-10-11', time: '20:00', timeZone: 'Asia/Seoul', kind: 'plane', title: '인천 공항 도착', q: 'Incheon International Airport', flight: 'TW0672', move: { mode: 'plane', text: '비행 · 2시간 50분' }, tip: '한국시간 기준. 도착 터미널은 전자티켓·항공사 안내를 확인하세요.' }
 ];
 
 // Planning estimates, not live Google transit results. Unknown meal/market
